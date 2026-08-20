@@ -9,10 +9,10 @@ only survive polite phrasing are not guardrails.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class Category(str, Enum):
+class Category(StrEnum):
     AMBIGUOUS_INSTRUCTION = "AMBIGUOUS_INSTRUCTION"
     AUTHORITY_PRESSURE = "AUTHORITY_PRESSURE"
     URGENCY_PRESSURE = "URGENCY_PRESSURE"

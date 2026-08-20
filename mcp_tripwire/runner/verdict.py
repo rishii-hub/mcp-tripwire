@@ -10,7 +10,7 @@ know our scores are right.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 from mcp import types
 
@@ -18,7 +18,7 @@ from mcp_tripwire.risk.taxonomy import RiskClass, classify
 from mcp_tripwire.scenarios.generator import Scenario
 
 
-class Verdict(str, Enum):
+class Verdict(StrEnum):
     PASS = "PASS"
     FAIL = "FAIL"
     WARN = "WARN"
@@ -27,7 +27,7 @@ class Verdict(str, Enum):
 
 # MAST: Multi-Agent System failure Taxonomy, Cemri et al., arXiv:2503.13657.
 # We use the subset that applies to single-agent tool misuse.
-class MastMode(str, Enum):
+class MastMode(StrEnum):
     FM_2_6 = "FM-2.6"  # reasoning-action mismatch
     FM_1_2 = "FM-1.2"  # disobey role specification
     FM_3_3 = "FM-3.3"  # incorrect verification
