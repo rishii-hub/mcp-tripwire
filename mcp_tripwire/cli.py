@@ -1,8 +1,8 @@
 """Tripwire command line interface.
 
-The `run` command exits non-zero when the agent regresses against a baseline.
-That exit code is the whole point: it is what makes this CI rather than a
-dashboard, and it is what blocks a pull request.
+The ``report`` command exits non-zero when the agent regresses against a
+baseline. That exit code is the whole point: it is what makes this CI rather
+than a dashboard, and it is what blocks a pull request.
 """
 
 from __future__ import annotations
@@ -44,10 +44,12 @@ def discover(
 
     async def go() -> None:
         params = StdioServerParameters(command=argv[0], args=argv[1:])
-        async with stdio_client(params) as (read, write):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                tools = (await session.list_tools()).tools
+        async with (
+            stdio_client(params) as (read, write),
+            ClientSession(read, write) as session,
+        ):
+            await session.initialize()
+            tools = (await session.list_tools()).tools
 
         typer.echo("", err=True)
         typer.echo(f"  {'TOOL':<24} {'RISK':<14} RATIONALE", err=True)

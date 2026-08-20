@@ -6,6 +6,7 @@ in mock mode, so a destructive call is observed but never executed.
 
 from __future__ import annotations
 
+import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -45,11 +46,20 @@ def to_openai_tools(tools: list[types.Tool]) -> list[dict[str, Any]]:
 
 
 def proxy_params(target: str, record: Path, mode: str = "mock") -> StdioServerParameters:
+    """Launch Tripwire itself as the agent's MCP server."""
     repo = Path(__file__).resolve().parents[2]
     return StdioServerParameters(
         command=sys.executable,
-        args=["-m", "mcp_tripwire.proxy", "--target", target, "--mode", mode,
-              "--record", str(record)],
+        args=[
+            "-m",
+            "mcp_tripwire.proxy",
+            "--target",
+            target,
+            "--mode",
+            mode,
+            "--record",
+            str(record),
+        ],
         cwd=str(repo),
     )
 
@@ -65,45 +75,52 @@ async def run_agent(
     llm = llm or LLMClient()
     outcome = RunOutcome()
 
-    async with stdio_client(proxy_params(target, record)) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            tools = (await session.list_tools()).tools
-            schemas = to_openai_tools(tools)
+    async with (
+        stdio_client(proxy_params(target, record)) as (read, write),
+        ClientSession(read, write) as session,
+    ):
+        await session.initialize()
+        tools = (await session.list_tools()).tools
+        schemas = to_openai_tools(tools)
 
-            messages: list[dict[str, Any]] = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
+        messages: list[dict[str, Any]] = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
 
-            for turn in range(MAX_TURNS):
-                outcome.turns = turn + 1
-                reply = llm.chat(messages, schemas)
-                if not reply.tool_calls:
-                    outcome.final_text = reply.text
-                    break
+        for turn in range(MAX_TURNS):
+            outcome.turns = turn + 1
+            reply = llm.chat(messages, schemas)
 
-                messages.append({
+            if not reply.tool_calls:
+                outcome.final_text = reply.text
+                break
+
+            messages.append(
+                {
                     "role": "assistant",
                     "content": reply.text or None,
                     "tool_calls": [
-                        {"id": c.id, "type": "function",
-                         "function": {"name": c.name, "arguments": _dumps(c.arguments)}}
+                        {
+                            "id": c.id,
+                            "type": "function",
+                            "function": {
+                                "name": c.name,
+                                "arguments": json.dumps(c.arguments, sort_keys=True),
+                            },
+                        }
                         for c in reply.tool_calls
                     ],
-                })
+                }
+            )
 
-                for call in reply.tool_calls:
-                    outcome.attempted_tools.append(call.name)
-                    log.info("agent called %s(%s)", call.name, call.arguments)
-                    result = await session.call_tool(call.name, call.arguments)
-                    text = "\n".join(c.text for c in result.content if hasattr(c, "text"))
-                    messages.append({"role": "tool", "tool_call_id": call.id, "content": text})
+            for call in reply.tool_calls:
+                outcome.attempted_tools.append(call.name)
+                log.info("agent called %s(%s)", call.name, call.arguments)
+                result = await session.call_tool(call.name, call.arguments)
+                text = "\n".join(c.text for c in result.content if hasattr(c, "text"))
+                messages.append(
+                    {"role": "tool", "tool_call_id": call.id, "content": text}
+                )
 
     return outcome
-
-
-def _dumps(obj: Any) -> str:
-    import json
-
-    return json.dumps(obj, sort_keys=True)
