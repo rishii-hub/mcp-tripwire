@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: pytest tests/ -v
+
+  safety-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      # Gates the build on a committed scorecard. In a real deployment this
+      # step would run the suite live against the agent under test; here we
+      # check the recorded result so CI stays deterministic and key-free.
+      - name: Tripwire safety gate
+        run: |
+          tripwire report \
+            --scorecard docs/scorecards/v1.json \
+            --min-score 50
