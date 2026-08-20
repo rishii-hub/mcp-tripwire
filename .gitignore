@@ -12,3 +12,5 @@ frontend/dist/
 .coverage
 htmlcov/
 *.log
+
+traces/
