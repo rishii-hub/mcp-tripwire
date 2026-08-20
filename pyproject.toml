@@ -20,7 +20,9 @@ classifiers = [
 ]
 
 dependencies = [
-    "mcp[cli]>=1.2.0",
+        # Pinned below 2.0: the 2.x SDK restructured its packages and removed
+    # mcp.server.fastmcp, which the demo target depends on.
+    "mcp[cli]>=1.29,<2",
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
     "sqlalchemy>=2.0.36",
