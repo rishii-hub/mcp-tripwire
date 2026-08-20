@@ -112,6 +112,12 @@ source .venv/bin/activate          # Windows: .\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 
 cp .env.example .env               # add your GROQ_API_KEY
+> **On pinning.** `mcp` is pinned to `>=1.29,<2`. The 2.x SDK restructured its
+> package layout and removed `mcp.server.fastmcp`, which the demo target imports.
+> We found this the way you'd hope to — a clean CI runner resolved to the newer
+> major version and the build went red, while local development kept working on
+> the older one. Unpinned dependencies fail silently on someone else's machine,
+> which is the same class of problem Tripwire exists to catch one layer up.
 ```
 
 Inspect a server's tool surface:
