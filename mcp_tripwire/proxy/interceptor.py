@@ -17,19 +17,18 @@ import hashlib
 import json
 import time
 from dataclasses import asdict, dataclass, field
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from mcp import ClientSession
-from mcp import types
+from mcp import ClientSession, types
 
 from mcp_tripwire.logging import get_logger
 
 log = get_logger(__name__)
 
 
-class Mode(str, Enum):
+class Mode(StrEnum):
     PASSTHROUGH = "passthrough"
     MOCK = "mock"
     REPLAY = "replay"

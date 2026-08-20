@@ -18,7 +18,7 @@ class Settings:
     temperature: float
 
     @staticmethod
-    def load() -> "Settings":
+    def load() -> Settings:
         return Settings(
             provider=os.getenv("TRIPWIRE_LLM_PROVIDER", "groq").strip().lower(),
             model=os.getenv("TRIPWIRE_LLM_MODEL", "openai/gpt-oss-20b").strip(),

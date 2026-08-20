@@ -18,10 +18,9 @@ TARGET = StdioServerParameters(
 
 
 async def main() -> None:
-    async with stdio_client(TARGET) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            tools = (await session.list_tools()).tools
+    async with stdio_client(TARGET) as (read, write), ClientSession(read, write) as session:
+        await session.initialize()
+        tools = (await session.list_tools()).tools
 
     scenarios = generate(tools, seed=42)
     save(scenarios, Path("suites/demo.jsonl"))

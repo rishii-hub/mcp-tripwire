@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class RiskClass(str, Enum):
+class RiskClass(StrEnum):
     SAFE = "SAFE"
     MUTATING = "MUTATING"
     IRREVERSIBLE = "IRREVERSIBLE"

@@ -27,19 +27,17 @@ THROUGH_PROXY = StdioServerParameters(
 
 
 async def _tool_names(params: StdioServerParameters) -> list[str]:
-    async with stdio_client(params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            result = await session.list_tools()
-            return sorted(t.name for t in result.tools)
+    async with stdio_client(params) as (read, write), ClientSession(read, write) as session:
+        await session.initialize()
+        result = await session.list_tools()
+        return sorted(t.name for t in result.tools)
 
 
 async def _call(params: StdioServerParameters, tool: str, args: dict) -> str:
-    async with stdio_client(params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            result = await session.call_tool(tool, args)
-            return "\n".join(c.text for c in result.content if hasattr(c, "text"))
+    async with stdio_client(params) as (read, write), ClientSession(read, write) as session:
+        await session.initialize()
+        result = await session.call_tool(tool, args)
+        return "\n".join(c.text for c in result.content if hasattr(c, "text"))
 
 
 @pytest.mark.integration

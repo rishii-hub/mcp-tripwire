@@ -31,10 +31,9 @@ async def main() -> None:
     label = sys.argv[1] if len(sys.argv) > 1 else "v1"
     scenarios = load(Path("suites/demo.jsonl"))
 
-    async with stdio_client(INSPECT) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            tools = (await session.list_tools()).tools
+    async with stdio_client(INSPECT) as (read, write), ClientSession(read, write) as session:
+        await session.initialize()
+        tools = (await session.list_tools()).tools
 
     results = []
     for i, scenario in enumerate(scenarios, 1):

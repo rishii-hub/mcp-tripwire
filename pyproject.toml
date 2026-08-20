@@ -61,7 +61,11 @@ select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "T20", "RET", "SIM"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
+# Scripts and tests are entrypoints, not library code; they print to stderr
+# deliberately. B008 is Typer's documented idiom for CLI options.
 "tests/*" = ["T20"]
+"scripts/*" = ["T20"]
+"mcp_tripwire/cli.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
